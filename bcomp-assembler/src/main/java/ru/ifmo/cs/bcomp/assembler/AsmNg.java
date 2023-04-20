@@ -427,8 +427,17 @@ public class AsmNg {
             case BCompNGParser.LD:
                 i = Instruction.LD;
                 break;
-            case BCompNGParser.SWAM:
-                i = Instruction.SWAM;
+            case BCompNGParser.SPADD:
+                i = Instruction.SPADD;
+                break;
+//            case BCompNGParser.SWAM:
+//                i = Instruction.SWAM;
+//                break;
+            case BCompNGParser.MUL:
+                i = Instruction.MUL;
+                break;
+            case BCompNGParser.DIV:
+                i = Instruction.DIV;
                 break;
             case BCompNGParser.JUMP:
                 i = Instruction.JUMP;
@@ -505,6 +514,24 @@ public class AsmNg {
                 break;
             case BCompNGParser.SWAP:
                 i = Instruction.SWAP;
+                break;
+            case BCompNGParser.RSP:
+                i = Instruction.RSP;
+                break;
+            case BCompNGParser.WSP:
+                i = Instruction.WSP;
+                break;
+            case BCompNGParser.RIP:
+                i = Instruction.RIP;
+                break;
+            case BCompNGParser.WIP:
+                i = Instruction.WIP;
+                break;
+            case BCompNGParser.RPS:
+                i = Instruction.RPS;
+                break;
+            case BCompNGParser.WPS:
+                i = Instruction.WPS;
                 break;
             //branch
             case BCompNGParser.BEQ:

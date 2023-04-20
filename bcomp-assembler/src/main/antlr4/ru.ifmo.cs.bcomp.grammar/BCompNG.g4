@@ -128,10 +128,11 @@ comment
    : COMMENT
    ;
 
-addr: AND | OR | ADD | ADC | SUB | CMP | LOOP | LD | SWAM | JUMP | CALL | ST;
+// SWAM replaced by SPADD
+addr: AND | OR | ADD | ADC | SUB | CMP | LOOP | LD | SPADD | JUMP | CALL | ST | MUL;
 nonaddr: NOP | HLT | CLA | NOT | CLC | CMC | ROL | ROR | ASL | ASR | SXTB | SWAB |
          INC | DEC | NEG | POP | POPF | RET | IRET | PUSH | PUSHF | SWAP |
-         EI  | DI;
+         EI  | DI | RSP | WSP | RIP | WIP | RPS | WPS | DIV;
 branch: BEQ | BNE | BMI | BPL | BCS | BCC | BVS | BVC | BLT | BGE | BR;
 io:  IN | OUT | INT;
 
@@ -255,6 +256,15 @@ IRET: ( I R E T ) | ( RV RO RZ RV RR RP);  // ВОЗВРП
 PUSH: ( P U S H ) | ( RS RU RN RSSIGN ); // СУНЬ
 PUSHF: ( P U S H F ) | ( RS RU RN RSSIGN RF); // СУНЬФ
 SWAP: ( S W A P ) | ( RM RE RN RSSIGN ); // МЕНЬ
+RSP: ( R S P );
+WSP: ( W S P );
+RIP: ( R I P );
+WIP: ( W I P );
+RPS: ( R P S );
+WPS: ( W P S );
+SPADD: (S P A D D) | (S A D) | (S A D D);
+MUL: (M U L);
+DIV: (D I V);
 
 BEQ: ( B E Q ) | ( B Z S ) | ( RB RYA RK RA ); // БЯКА
 BNE: ( B N E ) | ( B Z C );
