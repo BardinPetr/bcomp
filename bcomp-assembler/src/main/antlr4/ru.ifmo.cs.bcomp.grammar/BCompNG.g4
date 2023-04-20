@@ -69,11 +69,13 @@ dev
 
 operand
    : directAbsolute
-   | indirect
-   | postIncrement
-   | preDecrement
-   | displacementSP
-   | directRelative
+   | indirectSP
+   | indirectIP
+   | postIncrementIP
+   | postIncrementSP
+   | preDecrementSP
+   | directRelativeIP
+   | directRelativeSP
    | directLoad
    ;
 
@@ -82,24 +84,31 @@ directAbsolute
    | '$' label
    ;
 
-indirect
+indirectIP
    : '(' label ')'
    ;
 
-postIncrement
+postIncrementIP
    : '(' label ')' '+'
    ;
 
-preDecrement
-   : '-' '(' label ')'
+indirectSP
+   : '(' '&' number ')'
    ;
 
-displacementSP
+postIncrementSP
+   : '(' '&' number ')' '+'
+   ;
+
+preDecrementSP
+   : '-' '(' '&' number ')'
+   ;
+
+directRelativeSP
    : '&' number
-   | '(' sp '+' number ')'
    ;
 
-directRelative
+directRelativeIP
    : label
    ;
 

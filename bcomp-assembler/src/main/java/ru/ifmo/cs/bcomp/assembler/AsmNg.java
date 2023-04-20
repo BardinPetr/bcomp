@@ -5,11 +5,6 @@
  */
 package ru.ifmo.cs.bcomp.assembler;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -17,8 +12,9 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import ru.ifmo.cs.bcomp.grammar.*;
 import ru.ifmo.cs.bcomp.grammar.BCompNGParser.*;
 
+import java.util.*;
+
 /**
- *
  * @author serge
  */
 public class AsmNg {
@@ -28,51 +24,14 @@ public class AsmNg {
      * base_address
      */
     public static final int BASE_ADDRESS = 0x10;
-
-    public static void main(String[] args) throws Exception {
-        AsmNg asmng = new AsmNg(
-                "ORG FF\n"
-                + "START: LOOP START\n"
-                + "LD   #FF\n"
-                + "IN \n"
-                + "ad: and ad\n"
-                + "ORG 030h\n"
-                + "    OR $ad\n"
-                + "bc:\n"
-                + "    WORD бяка\n"
-                + "    LD #0xFF\n"
-                + "    LD #-0x10\n"
-                + "    LD #0x-10\n"
-                + "    ST &0\n"
-                + "    ВЖУХ бяка\n"
-                + "eb:    WORD 44H,33,49,50\n"
-                + "бяка: WORD 22H\n"
-                + "    BR бяка\n"
-                + "    ПРЫГ (bc)\n"
-                + "    WORD 1 dup(-0x10)\n"
-                + "    WORD 0x12,?,0x13 ; komment\n"
-                + "");
-        Program prog = asmng.compile();
-        System.out.println("-------errors--------");
-        System.out.println(asmng.getErrors());
-        if (prog != null) {
-            System.out.println("-------words--------");
-            System.out.println(prog.toCompiledWords());
-            System.out.println("-------binary--------");
-            System.out.println(prog.toBinaryRepresentation());
-        } else {
-            System.out.println("Program is not compiled");
-        }
-    }
-
-    private CodePointCharStream program;
-    private BCompNGLexer lexer;
-    private CommonTokenStream tokens;
-    private BCompNGParser parser;
-    private AssemblerAntlrErrorStrategy errHandler;
-    private HashMap<String, Label> labels;
-    private HashMap<Integer, MemoryWord> memory;
-    private List<String> errors;
+    private final CodePointCharStream program;
+    private final BCompNGLexer lexer;
+    private final CommonTokenStream tokens;
+    private final BCompNGParser parser;
+    private final AssemblerAntlrErrorStrategy errHandler;
+    private final HashMap<String, Label> labels;
+    private final HashMap<Integer, MemoryWord> memory;
+    private final List<String> errors;
 
     protected AsmNg(CodePointCharStream program) {
         this.program = program;
@@ -94,7 +53,83 @@ public class AsmNg {
 
     public AsmNg(String program) {
         //TODO fix grammar prog statement
-        this(CharStreams.fromString(program+"\n"));
+        this(CharStreams.fromString(program + "\n"));
+    }
+
+    public static void main(String[] args) throws Exception {
+        AsmNg asmng = new AsmNg(
+                "ORG FF\n"
+                        + "START: LOOP START\n"
+                        + "LD   #FF\n"
+                        + "IN \n"
+                        + "ad: and ad\n"
+                        + "ORG 030h\n"
+                        + "    OR $ad\n"
+                        + "bc:\n"
+                        + "    WORD бяка\n"
+                        + "    LD #0xFF\n"
+                        + "    LD #-0x10\n"
+                        + "    LD #0x-10\n"
+                        + "    ST &0\n"
+                        + "    ВЖУХ бяка\n"
+                        + "eb:    WORD 44H,33,49,50\n"
+                        + "бяка: WORD 22H\n"
+                        + "    BR бяка\n"
+                        + "    ПРЫГ (bc)\n"
+                        + "    WORD 1 dup(-0x10)\n"
+                        + "    WORD 0x12,?,0x13 ; komment\n");
+        Program prog = asmng.compile();
+        System.out.println("-------errors--------");
+        System.out.println(asmng.getErrors());
+        if (prog != null) {
+            System.out.println("-------words--------");
+            System.out.println(prog.toCompiledWords());
+            System.out.println("-------binary--------");
+            System.out.println(prog.toBinaryRepresentation());
+        } else {
+            System.out.println("Program is not compiled");
+        }
+    }
+
+    private static Integer parseIntFromNumberContext(NumberContext nc, Parser parser) {
+        Integer number = null;
+        String text = null;
+        if (nc.DECIMAL() != null) {
+            text = nc.DECIMAL().getText();
+            text = text.replaceAll("0[dD]", "");
+            //System.out.println(text);
+            number = Integer.parseInt(text);
+            return number;
+        }
+        if (nc.HEX() != null) {
+            text = nc.HEX().getText();
+            //System.out.println(text);
+            text = text.replaceAll("(0[xX])|[hH]", "");
+            //System.out.println(text);
+            number = Integer.parseInt(text, 16);
+            return number;
+        }
+        if (number == null) {
+            throw new AssemblerException("Could not recognize valid number while parsing " + nc.getText() + " operand", parser);
+        }
+        return number;
+    }
+
+    private static TerminalNode getTerminalNode(ParseTree p) {
+        TerminalNode t = null;
+        for (int i = 0; i < p.getChildCount(); i++) {
+            ParseTree internal = p.getChild(i);
+            if (internal instanceof TerminalNode) {
+                t = (TerminalNode) internal;
+                break;
+            } else {
+                t = getTerminalNode(internal);
+                if (t != null) {
+                    break;
+                }
+            }
+        }
+        return t;
     }
 
     public BCompNGParser getParser() {
@@ -109,10 +144,10 @@ public class AsmNg {
         Program prog = null;
         try {
             //decode commands and collect all labels
-            //System.out.println("first pass");        
+            //System.out.println("first pass");
             firstPass();
             //debug output
-            //System.out.println(labels);     
+            //System.out.println(labels);
             //System.out.println("second pass");
             prog = secondPass();
         } catch (AssemblerException e) {
@@ -173,20 +208,23 @@ public class AsmNg {
                         AddressingMode am = new AddressingMode();
                         i.operand = am;
                         //make String copy. Do not remove new String(..)
-                        i.operand.reference = new String(ICtx.label().getText());
+                        i.operand.reference = ICtx.label().getText();
                     }
                     if (instr.type == Instruction.Type.IO) {
                         AssemblerException ae = new AssemblerException("Device or vector shall be valid number", parser, ICtx);
                         if (ICtx.dev() == null) {
-                                reportAndRecoverFromError(ae);return;
+                            reportAndRecoverFromError(ae);
+                            return;
                         }
                         NumberContext nc = ICtx.dev().number();
                         if (nc == null) {
-                            reportAndRecoverFromError(ae);return;
+                            reportAndRecoverFromError(ae);
+                            return;
                         }
-                        Integer devnum = parseIntFromNumberContext(nc,parser);
+                        Integer devnum = parseIntFromNumberContext(nc, parser);
                         if (devnum == null) {
-                            reportAndRecoverFromError(ae);return;
+                            reportAndRecoverFromError(ae);
+                            return;
                         }
                         i.device = devnum;
                     }
@@ -202,7 +240,7 @@ public class AsmNg {
                 //parse direct numbers
                 NumberContext nc = ctx.number();
                 if (nc != null) {
-                    Integer i = parseIntFromNumberContext(nc,parser);
+                    Integer i = parseIntFromNumberContext(nc, parser);
                     m.value = i;
                 }
                 //undefined number will assume to 0
@@ -211,11 +249,10 @@ public class AsmNg {
                 }
                 LabelContext lc = ctx.label();
                 if (lc != null) {
-                    m.value_addr_reference = new String(lc.getText());
+                    m.value_addr_reference = lc.getText();
                 }
                 //find out label if one and set it up to the first WORD
-                if (ctx.getParent().getParent() instanceof WordDirectiveContext) {
-                    WordDirectiveContext wdctx = (WordDirectiveContext) ctx.getParent().getParent();
+                if (ctx.getParent().getParent() instanceof WordDirectiveContext wdctx) {
                     //if label exsist in line
                     if (wdctx.lbl() != null) {
                         //look for this label address
@@ -230,7 +267,7 @@ public class AsmNg {
                 }
                 DupArgumentContext dactx = ctx.dupArgument();
                 if (dactx != null) {
-                    Integer count = parseIntFromNumberContext(dactx.count().number(),parser);
+                    Integer count = parseIntFromNumberContext(dactx.count().number(), parser);
                     if (count <= 1) {
                         //throw new RuntimeException("Internal error: count should be greater than 1");
                         reportError(new AssemblerException("DUP count should be greater than 1", parser, dactx));
@@ -239,7 +276,7 @@ public class AsmNg {
                     WordArgumentContext what = dactx.wordArgument();
                     int whatnum = 0;
                     if (!"?".equals(what.getText())) {
-                        whatnum = parseIntFromNumberContext(what.number(),parser);
+                        whatnum = parseIntFromNumberContext(what.number(), parser);
                     }
                     //System.out.println("DUP="+count+" of "+whatnum);
                     for (int mm = 1; mm < count; mm++) {
@@ -261,7 +298,7 @@ public class AsmNg {
             public void exitLbl(LblContext ctx) {
                 Label lab = new Label();
                 //make String copy. Do not remove new String(..)
-                lab.name = new String(ctx.label().getText().trim());
+                lab.name = ctx.label().getText().trim();
                 lab.address = address;
                 if (labels.containsKey(lab.name)) {
                     //TODO FIX IT with common error message
@@ -279,7 +316,7 @@ public class AsmNg {
             @Override
             public void exitOrgAddress(OrgAddressContext ctx) {
                 NumberContext n = ctx.address().number();
-                Integer i = parseIntFromNumberContext(n,parser);
+                Integer i = parseIntFromNumberContext(n, parser);
                 address = i;
             }
 
@@ -307,8 +344,7 @@ public class AsmNg {
         int prev = addresses.getFirst();
         for (Integer addr : addresses) {
             MemoryWord w = memory.get(addr);
-            if (w instanceof InstructionWord) {
-                InstructionWord iw = (InstructionWord) w;
+            if (w instanceof InstructionWord iw) {
                 iw.value = iw.instruction.opcode;
                 switch (iw.instruction.type) {
                     case NONADDR:
@@ -317,20 +353,20 @@ public class AsmNg {
                         compileOperand(iw);
                         break;
                     case BRANCH:
-                        iw.value = iw.instruction.opcode | convertReferenceToDisplacement(iw);
+                        iw.setValueByOpcode(convertReferenceToDisplacement(iw));
                         break;
                     case IO:
                         if (iw.instruction.opcode == Instruction.INT.opcode) {
                             if (iw.device < 0 || iw.device > 7) {
-                                reportError(new AssemblerException("Second pass: vector exceed limits [0..7]",parser));
+                                reportError(new AssemblerException("Second pass: vector exceed limits [0..7]", parser));
                             }
-                            iw.value = iw.instruction.opcode | iw.device;
+                            iw.setValueByOpcode(iw.device);
                             break;
                         }
                         if (iw.device < 0 || iw.device > 255) {
-                            reportError(new AssemblerException("Second pass: device number exceed limits [0..0xff]",parser));
+                            reportError(new AssemblerException("Second pass: device number exceed limits [0..0xff]", parser));
                         }
-                        iw.value = iw.instruction.opcode | iw.device;
+                        iw.setValueByOpcode(iw.device);
                         break;
                 }
             }
@@ -358,232 +394,75 @@ public class AsmNg {
         return prog;
     }
 
-    private static Integer parseIntFromNumberContext(NumberContext nc,Parser parser) {
-        Integer number = null;
-        String text = null;
-        if (nc.DECIMAL() != null) {
-            text = nc.DECIMAL().getText();
-            text = text.replaceAll("0[dD]", "");
-            //System.out.println(text);
-            number = Integer.parseInt(text);
-            return number;
-        }
-        if (nc.HEX() != null) {
-            text = nc.HEX().getText();
-            //System.out.println(text);
-            text = text.replaceAll("(0[xX])|[hH]", "");
-            //System.out.println(text);
-            number = Integer.parseInt(text, 16);
-            return number;
-        }
-        if (number==null) {
-            throw new AssemblerException("Could not recognize valid number while parsing "+nc.getText()+" operand",parser);
-        }
-        return number;
-    }
-
-    private static TerminalNode getTerminalNode(ParseTree p) {
-        TerminalNode t = null;
-        for (int i = 0; i < p.getChildCount(); i++) {
-            ParseTree internal = p.getChild(i);
-            if (internal instanceof TerminalNode) {
-                t = (TerminalNode) internal;
-                break;
-            } else {
-                t = getTerminalNode(internal);
-                if (t != null) {
-                    break;
-                }
-            }
-        }
-        return t;
-    }
-
     public final Instruction instructionByParserType(int parserType) {
         Instruction i = null;
         switch (parserType) {
             //address commands
-            case BCompNGParser.AND:
-                i = Instruction.AND;
-                break;
-            case BCompNGParser.OR:
-                i = Instruction.OR;
-                break;
-            case BCompNGParser.ADD:
-                i = Instruction.ADD;
-                break;
-            case BCompNGParser.ADC:
-                i = Instruction.ADC;
-                break;
-            case BCompNGParser.SUB:
-                i = Instruction.SUB;
-                break;
-            case BCompNGParser.CMP:
-                i = Instruction.CMP;
-                break;
-            case BCompNGParser.LOOP:
-                i = Instruction.LOOP;
-                break;
-            case BCompNGParser.LD:
-                i = Instruction.LD;
-                break;
-            case BCompNGParser.SPADD:
-                i = Instruction.SPADD;
-                break;
-//            case BCompNGParser.SWAM:
-//                i = Instruction.SWAM;
-//                break;
-            case BCompNGParser.MUL:
-                i = Instruction.MUL;
-                break;
-            case BCompNGParser.DIV:
-                i = Instruction.DIV;
-                break;
-            case BCompNGParser.JUMP:
-                i = Instruction.JUMP;
-                break;
-            case BCompNGParser.CALL:
-                i = Instruction.CALL;
-                break;
-            case BCompNGParser.ST:
-                i = Instruction.ST;
-                break;
+            case BCompNGParser.AND -> i = Instruction.AND;
+            case BCompNGParser.OR -> i = Instruction.OR;
+            case BCompNGParser.ADD -> i = Instruction.ADD;
+            case BCompNGParser.ADC -> i = Instruction.ADC;
+            case BCompNGParser.SUB -> i = Instruction.SUB;
+            case BCompNGParser.CMP -> i = Instruction.CMP;
+            case BCompNGParser.LOOP -> i = Instruction.LOOP;
+            case BCompNGParser.LD -> i = Instruction.LD;
+            case BCompNGParser.SPADD -> i = Instruction.SPADD;
+            case BCompNGParser.SWAM -> i = Instruction.SWAM;
+            case BCompNGParser.MUL -> i = Instruction.MUL;
+            case BCompNGParser.DIV -> i = Instruction.DIV;
+            case BCompNGParser.JUMP -> i = Instruction.JUMP;
+            case BCompNGParser.CALL -> i = Instruction.CALL;
+            case BCompNGParser.ST -> i = Instruction.ST;
+
             //Addressless
-            case BCompNGParser.NOP:
-                i = Instruction.NOP;
-                break;
-            case BCompNGParser.HLT:
-                i = Instruction.HLT;
-                break;
-            case BCompNGParser.CLA:
-                i = Instruction.CLA;
-                break;
-            case BCompNGParser.NOT:
-                i = Instruction.NOT;
-                break;
-            case BCompNGParser.CLC:
-                i = Instruction.CLC;
-                break;
-            case BCompNGParser.CMC:
-                i = Instruction.CMC;
-                break;
-            case BCompNGParser.ROL:
-                i = Instruction.ROL;
-                break;
-            case BCompNGParser.ROR:
-                i = Instruction.ROR;
-                break;
-            case BCompNGParser.ASL:
-                i = Instruction.ASL;
-                break;
-            case BCompNGParser.ASR:
-                i = Instruction.ASR;
-                break;
-            case BCompNGParser.SXTB:
-                i = Instruction.SXTB;
-                break;
-            case BCompNGParser.SWAB:
-                i = Instruction.SWAB;
-                break;
-            case BCompNGParser.INC:
-                i = Instruction.INC;
-                break;
-            case BCompNGParser.DEC:
-                i = Instruction.DEC;
-                break;
-            case BCompNGParser.NEG:
-                i = Instruction.NEG;
-                break;
-            case BCompNGParser.POP:
-                i = Instruction.POP;
-                break;
-            case BCompNGParser.POPF:
-                i = Instruction.POPF;
-                break;
-            case BCompNGParser.RET:
-                i = Instruction.RET;
-                break;
-            case BCompNGParser.IRET:
-                i = Instruction.IRET;
-                break;
-            case BCompNGParser.PUSH:
-                i = Instruction.PUSH;
-                break;
-            case BCompNGParser.PUSHF:
-                i = Instruction.PUSHF;
-                break;
-            case BCompNGParser.SWAP:
-                i = Instruction.SWAP;
-                break;
-            case BCompNGParser.RSP:
-                i = Instruction.RSP;
-                break;
-            case BCompNGParser.WSP:
-                i = Instruction.WSP;
-                break;
-            case BCompNGParser.RIP:
-                i = Instruction.RIP;
-                break;
-            case BCompNGParser.WIP:
-                i = Instruction.WIP;
-                break;
-            case BCompNGParser.RPS:
-                i = Instruction.RPS;
-                break;
-            case BCompNGParser.WPS:
-                i = Instruction.WPS;
-                break;
+            case BCompNGParser.NOP -> i = Instruction.NOP;
+            case BCompNGParser.HLT -> i = Instruction.HLT;
+            case BCompNGParser.CLA -> i = Instruction.CLA;
+            case BCompNGParser.NOT -> i = Instruction.NOT;
+            case BCompNGParser.CLC -> i = Instruction.CLC;
+            case BCompNGParser.CMC -> i = Instruction.CMC;
+            case BCompNGParser.ROL -> i = Instruction.ROL;
+            case BCompNGParser.ROR -> i = Instruction.ROR;
+            case BCompNGParser.ASL -> i = Instruction.ASL;
+            case BCompNGParser.ASR -> i = Instruction.ASR;
+            case BCompNGParser.SXTB -> i = Instruction.SXTB;
+            case BCompNGParser.SWAB -> i = Instruction.SWAB;
+            case BCompNGParser.INC -> i = Instruction.INC;
+            case BCompNGParser.DEC -> i = Instruction.DEC;
+            case BCompNGParser.NEG -> i = Instruction.NEG;
+            case BCompNGParser.POP -> i = Instruction.POP;
+            case BCompNGParser.POPF -> i = Instruction.POPF;
+            case BCompNGParser.RET -> i = Instruction.RET;
+            case BCompNGParser.IRET -> i = Instruction.IRET;
+            case BCompNGParser.PUSH -> i = Instruction.PUSH;
+            case BCompNGParser.PUSHF -> i = Instruction.PUSHF;
+            case BCompNGParser.SWAP -> i = Instruction.SWAP;
+            case BCompNGParser.RSP -> i = Instruction.RSP;
+            case BCompNGParser.WSP -> i = Instruction.WSP;
+            case BCompNGParser.RIP -> i = Instruction.RIP;
+            case BCompNGParser.WIP -> i = Instruction.WIP;
+            case BCompNGParser.RPS -> i = Instruction.RPS;
+            case BCompNGParser.WPS -> i = Instruction.WPS;
+
             //branch
-            case BCompNGParser.BEQ:
-                i = Instruction.BEQ;
-                break;
-            case BCompNGParser.BNE:
-                i = Instruction.BNE;
-                break;
-            case BCompNGParser.BMI:
-                i = Instruction.BMI;
-                break;
-            case BCompNGParser.BPL:
-                i = Instruction.BPL;
-                break;
-            case BCompNGParser.BCS:
-                i = Instruction.BCS;
-                break;
-            case BCompNGParser.BCC:
-                i = Instruction.BCC;
-                break;
-            case BCompNGParser.BVS:
-                i = Instruction.BVS;
-                break;
-            case BCompNGParser.BVC:
-                i = Instruction.BVC;
-                break;
-            case BCompNGParser.BLT:
-                i = Instruction.BLT;
-                break;
-            case BCompNGParser.BGE:
-                i = Instruction.BGE;
-                break;
-            case BCompNGParser.BR:
-                i = Instruction.BR;
-                break;
-            case BCompNGParser.EI:
-                i = Instruction.EI;
-                break;
-            case BCompNGParser.DI:
-                i = Instruction.DI;
-                break;
-            case BCompNGParser.IN:
-                i = Instruction.IN;
-                break;
-            case BCompNGParser.OUT:
-                i = Instruction.OUT;
-                break;
-            case BCompNGParser.INT:
-                i = Instruction.INT;
-                break;
-                
-            default:
+            case BCompNGParser.BEQ -> i = Instruction.BEQ;
+            case BCompNGParser.BNE -> i = Instruction.BNE;
+            case BCompNGParser.BMI -> i = Instruction.BMI;
+            case BCompNGParser.BPL -> i = Instruction.BPL;
+            case BCompNGParser.BCS -> i = Instruction.BCS;
+            case BCompNGParser.BCC -> i = Instruction.BCC;
+            case BCompNGParser.BVS -> i = Instruction.BVS;
+            case BCompNGParser.BVC -> i = Instruction.BVC;
+            case BCompNGParser.BLT -> i = Instruction.BLT;
+            case BCompNGParser.BGE -> i = Instruction.BGE;
+            case BCompNGParser.BR -> i = Instruction.BR;
+            case BCompNGParser.EI -> i = Instruction.EI;
+            case BCompNGParser.DI -> i = Instruction.DI;
+            case BCompNGParser.IN -> i = Instruction.IN;
+            case BCompNGParser.OUT -> i = Instruction.OUT;
+            case BCompNGParser.INT -> i = Instruction.INT;
+            default -> {
+            }
         }
         return i;
     }
@@ -596,55 +475,61 @@ public class AsmNg {
         }
         //System.out.println("!!!"+((RuleContext)pt).getRuleIndex());        
         switch (((RuleContext) pt).getRuleIndex()) {
-            case BCompNGParser.RULE_directAbsolute:
+            case BCompNGParser.RULE_directAbsolute -> {
                 am.addressation = AddressingMode.AddressingType.DIRECT_ABSOLUTE;
                 DirectAbsoluteContext dactx = octx.directAbsolute();
                 if (dactx.address() != null) {
-                    am.number = parseIntFromNumberContext(dactx.address().number(),parser);
+                    am.number = parseIntFromNumberContext(dactx.address().number(), parser);
                 }
                 if (dactx.label() != null) {
                     am.reference = referenceByLabelContext(dactx.label());
                 }
-                break;
-            case BCompNGParser.RULE_indirect:
-                am.addressation = AddressingMode.AddressingType.INDIRECT;
-                am.reference = referenceByLabelContext(octx.indirect().label());
-                break;
-            case BCompNGParser.RULE_postIncrement:
-                am.addressation = AddressingMode.AddressingType.POST_INCREMENT;
-                am.reference = referenceByLabelContext(octx.postIncrement().label());
-                break;
-            case BCompNGParser.RULE_preDecrement:
-                am.addressation = AddressingMode.AddressingType.PRE_DECREMENT;
-                am.reference = referenceByLabelContext(octx.preDecrement().label());
-                break;
-            case BCompNGParser.RULE_displacementSP:
-                am.addressation = AddressingMode.AddressingType.DISPLACEMENT_SP;
-                Integer number_sp = parseIntFromNumberContext(octx.displacementSP().number(),parser);
-                am.number = number_sp;
-                break;
-            case BCompNGParser.RULE_directRelative:
-                am.addressation = AddressingMode.AddressingType.DIRECT_RELATIVE;
-                am.reference = referenceByLabelContext(octx.directRelative().label());
-                break;
-            case BCompNGParser.RULE_directLoad:
+            }
+            case BCompNGParser.RULE_indirectIP -> {
+                am.addressation = AddressingMode.AddressingType.INDIRECT_IP;
+                am.reference = referenceByLabelContext(octx.indirectIP().label());
+            }
+            case BCompNGParser.RULE_indirectSP -> {
+                am.addressation = AddressingMode.AddressingType.INDIRECT_SP;
+                am.number = parseIntFromNumberContext(octx.indirectSP().number(), parser);
+            }
+            case BCompNGParser.RULE_postIncrementIP -> {
+                am.addressation = AddressingMode.AddressingType.POST_INCREMENT_IP;
+                am.reference = referenceByLabelContext(octx.postIncrementIP().label());
+            }
+            case BCompNGParser.RULE_postIncrementSP -> {
+                am.addressation = AddressingMode.AddressingType.POST_INCREMENT_SP;
+                am.number = parseIntFromNumberContext(octx.postIncrementSP().number(), parser);
+            }
+            case BCompNGParser.RULE_preDecrementSP -> {
+                am.addressation = AddressingMode.AddressingType.PRE_DECREMENT_SP;
+                am.number = parseIntFromNumberContext(octx.preDecrementSP().number(), parser);
+            }
+            case BCompNGParser.RULE_directRelativeSP -> {
+                am.addressation = AddressingMode.AddressingType.DIRECT_RELATIVE_SP;
+                am.number = parseIntFromNumberContext(octx.directRelativeSP().number(), parser);
+            }
+            case BCompNGParser.RULE_directRelativeIP -> {
+                am.addressation = AddressingMode.AddressingType.DIRECT_RELATIVE_IP;
+                am.reference = referenceByLabelContext(octx.directRelativeIP().label());
+            }
+            case BCompNGParser.RULE_directLoad -> {
                 am.addressation = AddressingMode.AddressingType.DIRECT_LOAD;
-                Integer number_dl = parseIntFromNumberContext(octx.directLoad().number(),parser);
-                am.number = number_dl;
-                break;
-            default:
-                throw new AssemblerException("Internal error: Wrong OperandContext while parsing addressing mode",parser);
+                am.number = parseIntFromNumberContext(octx.directLoad().number(), parser);
+            }
+            default ->
+                    throw new AssemblerException("Internal error: Wrong OperandContext while parsing addressing mode", parser);
         }
         return am;
     }
 
     private String referenceByLabelContext(LabelContext lctx) {
         if (lctx == null) {
-            AssemblerException ae =  new AssemblerException("Internal error: LabelContex cant be null here",parser);
+            AssemblerException ae = new AssemblerException("Internal error: LabelContex cant be null here", parser);
             reportError(ae);
         }
         //make String copy. Do not remove new String(..)
-        return new String(lctx.getText());
+        return lctx.getText();
     }
 
     private void compileOperand(InstructionWord iw) {
@@ -653,64 +538,49 @@ public class AsmNg {
         }
         int num = MemoryWord.UNDEFINED;
         switch (iw.operand.addressation) {
-            case DIRECT_ABSOLUTE:
+            case DIRECT_ABSOLUTE -> {
                 if (iw.operand.number != MemoryWord.UNDEFINED) {
                     num = iw.operand.number;
                 }
                 if (iw.operand.reference != null) {
                     Label l = labels.get(iw.operand.reference);
-                    if (l == null) {
-                        reportError(new AssemblerException("Second pass: label refference "+iw.operand.reference+" not found",parser));
-                    }
-                    else { 
+                    if (l == null)
+                        reportError(new AssemblerException("Second pass: label refference " + iw.operand.reference + " not found", parser));
+                    else
                         num = l.address;
-                    }
                 }
-                if ((num > MemoryWord.MAX_ADDRESS) || (num < 0)) {
-                    //TODO error number exceed limit values
-                    reportError(new AssemblerException("Second pass: memory address 0x"+Integer.toHexString(num)+" out of range [0..0x7FF]",parser));
-                }
-                iw.value = iw.instruction.opcode | (num & MemoryWord.MAX_ADDRESS);
-                break;
-            case INDIRECT:
-                iw.value = iw.instruction.opcode | 0x0800 | convertReferenceToDisplacement(iw);
-                break;
-            case POST_INCREMENT:
-                iw.value = iw.instruction.opcode | 0x0A00 | convertReferenceToDisplacement(iw);
-                break;
-            case PRE_DECREMENT:
-                iw.value = iw.instruction.opcode | 0x0B00 | convertReferenceToDisplacement(iw);
-                break;
-            case DISPLACEMENT_SP:
-                if (iw.operand.number != MemoryWord.UNDEFINED) {
-                    num = iw.operand.number;
-                } else {
-                    reportError(new AssemblerException("Second pass: number shoud present in command",parser));
-                }
-                if (num > 127 || num < -128) {
-                    reportError(new AssemblerException("Second pass: stack displasment exceed limits [-127..128]",parser));
-                }
-                iw.value = iw.instruction.opcode | 0x0C00 | (num & 0xFF);
-                break;
-            case DIRECT_RELATIVE:
-                iw.value = iw.instruction.opcode | 0x0E00 | convertReferenceToDisplacement(iw);
-                break;
-            case DIRECT_LOAD:
-                if (iw.operand.number != MemoryWord.UNDEFINED) {
-                    num = iw.operand.number;
-                } else {
-                    reportError(new AssemblerException("Second pass: number shoud present in command",parser));
-                }
-                if (num > 255 || num < -128) {
-                    //TODO error number exceed limit values
-                    throw new AssemblerException("Second pass: direct load operand exceed limits [-128..255]", parser);
-                    //throw new RuntimeException("Internal error: ");
-                }
-                iw.value = iw.instruction.opcode | 0x0F00 | (num & 0xFF);
-                break;
-            default:
-                reportError(new AssemblerException("Second pass: addressing mode is not properly defined",parser));
+                if ((num > MemoryWord.MAX_ADDRESS) || (num < 0))
+                    reportError(new AssemblerException("Second pass: memory address 0x" + Integer.toHexString(num) + " out of range [0..0x7FF]", parser));
+
+                iw.setValueByOpcode(0, num & MemoryWord.MAX_ADDRESS);
+            }
+
+            case DIRECT_RELATIVE_SP -> iw.setValueByOpcode(0x0800, parseOneByteArgument(iw));
+            case INDIRECT_SP -> iw.setValueByOpcode(0x0900, parseOneByteArgument(iw));
+            case POST_INCREMENT_SP -> iw.setValueByOpcode(0x0A00, parseOneByteArgument(iw));
+            case PRE_DECREMENT_SP -> iw.setValueByOpcode(0x0B00, parseOneByteArgument(iw));
+
+            case INDIRECT_IP -> iw.setValueByOpcode(0x0C00, convertReferenceToDisplacement(iw));
+            case POST_INCREMENT_IP -> iw.setValueByOpcode(0x0D00, convertReferenceToDisplacement(iw));
+            case DIRECT_RELATIVE_IP -> iw.setValueByOpcode(0x0E00, convertReferenceToDisplacement(iw));
+
+            case DIRECT_LOAD -> iw.setValueByOpcode(0x0F00, parseOneByteArgument(iw));
+            default ->
+                    reportError(new AssemblerException("Second pass: addressing mode is not properly defined", parser));
         }
+    }
+
+    private int parseOneByteArgument(InstructionWord iw) {
+        int num = MemoryWord.UNDEFINED;
+        if (iw.operand.number != MemoryWord.UNDEFINED)
+            num = iw.operand.number;
+        else
+            reportError(new AssemblerException("Second pass: number should present in command", parser));
+
+        if (num > 127 || num < -128)
+            reportError(new AssemblerException("Second pass: stack displacement exceed limits [-127..128]", parser));
+
+        return 0xFF & num;
     }
 
     private int convertReferenceToDisplacement(InstructionWord iw) {
@@ -722,7 +592,7 @@ public class AsmNg {
         }
         Label l = labels.get(reference);
         if (l == null) {
-            AssemblerException ae = new AssemblerException("Second pass: label refference "+reference+" not found",parser);
+            AssemblerException ae = new AssemblerException("Second pass: label refference " + reference + " not found", parser);
             reportError(ae);
             return 0;
         }
@@ -730,7 +600,7 @@ public class AsmNg {
         num = l.address - iw.address - 1; //-1 to fix impact of fetch cycle
         //TODO FIX
         if (num > 127 || num < -128) {
-            AssemblerException ae = new AssemblerException("Second pass: label "+reference+" displacement exceed limits [-127..128]",parser);
+            AssemblerException ae = new AssemblerException("Second pass: label " + reference + " displacement exceed limits [-127..128]", parser);
             reportError(ae);
             num = 0;
         }
@@ -740,7 +610,7 @@ public class AsmNg {
     private void reportError(AssemblerException ae) {
         errHandler.reportError(parser, ae);
     }
-    
+
     private void reportAndRecoverFromError(AssemblerException ae) {
         errHandler.reportError(parser, ae);
         errHandler.recover(parser, ae);
@@ -781,4 +651,4 @@ class AsmNGErrorListener extends BaseErrorListener {
         s = s.replace("\t", "\\t");
         return "'" + s + "'";
     }
-};
+}

@@ -6,7 +6,6 @@
 package ru.ifmo.cs.bcomp.assembler;
 
 /**
- *
  * @author serge
  */
 public class AddressingMode {
@@ -14,41 +13,94 @@ public class AddressingMode {
     public volatile int number = MemoryWord.UNDEFINED;
     public volatile String reference = null;
     public AddressingType addressation;
-    
-    public enum AddressingType {DIRECT_ABSOLUTE, INDIRECT, POST_INCREMENT, PRE_DECREMENT,
-                                DISPLACEMENT_SP, DIRECT_RELATIVE, DIRECT_LOAD};
-        
+
     @Override
     public String toString() {
         String s = "";
-        if(addressation==null) return s;
+        if (addressation == null) return s;
         switch (addressation) {
-            case DIRECT_ABSOLUTE: 
-                if (number != MemoryWord.UNDEFINED ) {s += "0d"+number; break;}
-                if (reference != null ) {s = '$'+reference; break;}
-                s="$undef"; break;
-            case INDIRECT:
-                if (reference != null ) {s = '(' + reference + ')'; break;}
-                s="(undef)"; break;
-            case POST_INCREMENT:
-                if (reference != null ) {s = '(' + reference + ")+"; break;}
-                s="(undef)+"; break;
-            case PRE_DECREMENT:
-                if (reference != null ) {s = "-(" + reference + ')'; break;}
-                s="-(undef)"; break;
-            case DISPLACEMENT_SP: 
-                if (number != MemoryWord.UNDEFINED ) {s = "&"+number; break;}
-                s="&undef"; break;
-            case DIRECT_RELATIVE:
-                if (reference != null ) {s = reference; break;}
-                s="undef"; break;
-            case DIRECT_LOAD: 
-                if (number != MemoryWord.UNDEFINED ) {s = "#"+number; break;}
-                s="#undef"; break;
+            case DIRECT_ABSOLUTE:
+                if (number != MemoryWord.UNDEFINED) {
+                    s += "0d" + number;
+                    break;
+                }
+                if (reference != null) {
+                    s = '$' + reference;
+                    break;
+                }
+                s = "$undef";
+                break;
+
+            case DIRECT_RELATIVE_SP:
+                if (number != MemoryWord.UNDEFINED) {
+                    s = "&" + number;
+                    break;
+                }
+                s = "&undef";
+                break;
+            case INDIRECT_SP:
+                if (number != MemoryWord.UNDEFINED) {
+                    s = "(&" + number + ')';
+                    break;
+                }
+                s = "(undef)";
+                break;
+            case POST_INCREMENT_SP:
+                if (number != MemoryWord.UNDEFINED) {
+                    s = "(&" + number + ")+";
+                    break;
+                }
+                s = "(&undef)+";
+                break;
+            case PRE_DECREMENT_SP:
+                if (number != MemoryWord.UNDEFINED) {
+                    s = "-(&" + number + ')';
+                    break;
+                }
+                s = "-(&undef)";
+                break;
+
+            case INDIRECT_IP:
+                if (reference != null) {
+                    s = '(' + reference + ')';
+                    break;
+                }
+                s = "(undef)";
+                break;
+            case POST_INCREMENT_IP:
+                if (reference != null) {
+                    s = '(' + reference + ")+";
+                    break;
+                }
+                s = "(undef)+";
+                break;
+            case DIRECT_RELATIVE_IP:
+                if (reference != null) {
+                    s = reference;
+                    break;
+                }
+                s = "undef";
+                break;
+
+            case DIRECT_LOAD:
+                if (number != MemoryWord.UNDEFINED) {
+                    s = "#" + number;
+                    break;
+                }
+                s = "#undef";
+                break;
             default:
-                s="UNDEF";
+                s = "UNDEF";
         }
         return s;
     }
-    
+
+    public enum AddressingType {
+        DIRECT_ABSOLUTE,
+        INDIRECT_IP, INDIRECT_SP,
+        POST_INCREMENT_IP, POST_INCREMENT_SP, PRE_DECREMENT_SP,
+        DIRECT_RELATIVE_SP, DIRECT_RELATIVE_IP,
+        DIRECT_LOAD
+    }
+
 }

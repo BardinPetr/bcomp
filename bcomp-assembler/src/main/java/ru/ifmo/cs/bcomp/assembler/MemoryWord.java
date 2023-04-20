@@ -25,6 +25,12 @@ public class MemoryWord {
                 "WORD " +
                 (value != UNDEFINED? " 0x"+Integer.toHexString(value): "");
     }
-    
-    
+
+    public int getAddress() {
+        return address;
+    }
+
+    public int getValue() {
+        return value;
+    }
 }
