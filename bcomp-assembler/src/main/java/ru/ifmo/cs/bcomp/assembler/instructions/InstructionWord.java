@@ -3,14 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ru.ifmo.cs.bcomp.assembler;
+package ru.ifmo.cs.bcomp.assembler.instructions;
 
 /**
  * @author serge
  */
 public class InstructionWord extends MemoryWord {
     public volatile Instruction instruction = null;
-    public volatile AddressingMode operand = null; //only for address command
+    public volatile AddressedOperand operand = null; //only for address command
     public volatile Integer device = UNDEFINED; //only for io command IN OUT INTR
 
     @Override

@@ -2,7 +2,11 @@
  * $Id$
  */
 
-package ru.ifmo.cs.bcomp;
+package ru.ifmo.cs.bcomp.microcode;
+
+import ru.ifmo.cs.bcomp.CPU;
+import ru.ifmo.cs.bcomp.ControlSignal;
+import ru.ifmo.cs.bcomp.State;
 
 import java.util.ArrayList;
 import static ru.ifmo.cs.components.Utils.toHex;

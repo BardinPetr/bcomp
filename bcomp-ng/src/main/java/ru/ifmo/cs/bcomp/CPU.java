@@ -6,6 +6,11 @@ package ru.ifmo.cs.bcomp;
 import java.util.EnumMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+
+import ru.ifmo.cs.bcomp.io.IOBuses;
+import ru.ifmo.cs.bcomp.io.IOControlSignal;
+import ru.ifmo.cs.bcomp.microcode.MCDecoder;
+import ru.ifmo.cs.bcomp.microcode.MicroCode;
 import ru.ifmo.cs.components.*;
 import static ru.ifmo.cs.bcomp.ControlSignal.*;
 import static ru.ifmo.cs.bcomp.State.*;

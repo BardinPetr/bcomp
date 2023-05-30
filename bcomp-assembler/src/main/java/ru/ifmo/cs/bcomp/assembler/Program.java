@@ -5,6 +5,9 @@
  */
 package ru.ifmo.cs.bcomp.assembler;
 
+import ru.ifmo.cs.bcomp.assembler.instructions.Label;
+import ru.ifmo.cs.bcomp.assembler.instructions.MemoryWord;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;

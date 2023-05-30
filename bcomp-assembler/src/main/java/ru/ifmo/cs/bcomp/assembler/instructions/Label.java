@@ -1,5 +1,5 @@
 
-package ru.ifmo.cs.bcomp.assembler;
+package ru.ifmo.cs.bcomp.assembler.instructions;
 
 /**
  *

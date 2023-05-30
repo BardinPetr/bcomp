@@ -2,9 +2,9 @@
  * $Id$
  */
 
-package ru.ifmo.cs.bcomp.assembler;
+package ru.ifmo.cs.bcomp.assembler.instructions;
 
-import static ru.ifmo.cs.bcomp.assembler.Instruction.Type.*;
+import static ru.ifmo.cs.bcomp.assembler.instructions.Instruction.Type.*;
 
 /**
  * @author Dmitry Afanasiev <KOT@MATPOCKuH.Ru>
@@ -14,8 +14,7 @@ public enum Instruction {
     //address
     AND(0x2000, ADDR), OR(0x3000, ADDR), ADD(0x4000, ADDR), ADC(0x5000, ADDR),
     SUB(0x6000, ADDR), CMP(0x7000, ADDR), LOOP(0x8000, ADDR), LD(0xA000, ADDR),
-    SWAM(0xB000, ADDR), SPADD(0xB000, ADDR), JUMP(0xC000, ADDR), CALL(0xD000, ADDR), ST(0xE000, ADDR),
-    MUL(0x9000, ADDR),
+    JUMP(0xC000, ADDR), CALL(0xD000, ADDR), ST(0xE000, ADDR),
     //addressless
     NOP(0x0000, NONADDR), HLT(0x0100, NONADDR), CLA(0x0200, NONADDR),
     NOT(0x0280, NONADDR), CLC(0x0300, NONADDR), CMC(0x0380, NONADDR),
@@ -25,24 +24,25 @@ public enum Instruction {
     POP(0x0800, NONADDR), POPF(0x0900, NONADDR), RET(0x0A00, NONADDR),
     IRET(0x0B00, NONADDR), PUSH(0x0C00, NONADDR), PUSHF(0x0D00, NONADDR),
     SWAP(0x0E00, NONADDR),
-    RSP(0x0F00, NONADDR), WSP(0x0F04, NONADDR),
-    RIP(0x0F01, NONADDR), WIP(0x0F05, NONADDR),
-    RPS(0x0F02, NONADDR), WPS(0x0F06, NONADDR),
-    DIV(0xFA00, NONADDR),
+    RSP(0x0F80, NONADDR), WSP(0x0FC0, NONADDR),
     //branch
     BEQ(0xF000, BRANCH), BNE(0xF100, BRANCH), BMI(0xF200, BRANCH), BPL(0xF300, BRANCH),
     BCS(0xF400, BRANCH), BCC(0xF500, BRANCH), BVS(0xF600, BRANCH), BVC(0xF700, BRANCH),
     BLT(0xF800, BRANCH), BGE(0xF900, BRANCH), BR(0xCE00, BRANCH),
     //io
     DI(0x1000, NONADDR), EI(0x1100, NONADDR), IN(0x1200, IO), OUT(0x1300, IO), INT(0x1800, IO),
-
+    //imm
+    SPADD(0xFC00, IMM),
+    //
+    FCALL(0xB000, FAR),
+    //
     END(1, Type.NONADDR);
 
     public static final Instruction[] values = Instruction.values();
     public final int opcode;
     public final String mnemonic;
 
-    public Type type;
+    public final Type type;
 
     Instruction(int opcode, Type type) {
         this.opcode = opcode;
@@ -50,31 +50,7 @@ public enum Instruction {
         this.type = type;
     }
 
-    public static AsmCommand lookup(RawCommand cmd) {
-        Instruction instruction = null;
-        Integer param = null;
-        var rawCmd = cmd.cmd();
-        for (var i : values()) {
-            if (i.type == NONADDR && i.opcode == rawCmd)
-                instruction = i;
-            if (i.type == ADDR && ((i.opcode ^ rawCmd) & 0xF000) == 0) {
-                instruction = i;
-                param = rawCmd & 0x0FFF;
-            }
-            if (i.type == BRANCH && ((i.opcode ^ rawCmd) & 0xFF00) == 0) {
-                instruction = i;
-                param = rawCmd & 0x00FF;
-            }
-        }
-        return new AsmCommand(cmd.memAddr(), cmd.cmd(), instruction, param, cmd.label());
-    }
-
-    public String getTypeString() {
-        return type.name();
-    }
-
-
     public enum Type {
-        ADDR, NONADDR, BRANCH, IO
+        ADDR, NONADDR, BRANCH, IO, IMM, FAR
     }
 }

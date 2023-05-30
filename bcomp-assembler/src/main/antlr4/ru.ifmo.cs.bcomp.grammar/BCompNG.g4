@@ -20,6 +20,8 @@ instruction
    | nonaddr
    | branch label
    | io dev
+   | imm directLoad
+   | far indirectAbsolute
    ;
 
 directive
@@ -84,6 +86,10 @@ directAbsolute
    | '$' label
    ;
 
+indirectAbsolute
+   : '(' '$' label ')'
+   ;
+
 indirectIP
    : '(' label ')'
    ;
@@ -137,13 +143,14 @@ comment
    : COMMENT
    ;
 
-// SWAM replaced by SPADD
-addr: AND | OR | ADD | ADC | SUB | CMP | LOOP | LD | SPADD | JUMP | CALL | ST | MUL;
+addr: AND | OR | ADD | ADC | SUB | CMP | LOOP | LD | JUMP | CALL | ST;
 nonaddr: NOP | HLT | CLA | NOT | CLC | CMC | ROL | ROR | ASL | ASR | SXTB | SWAB |
          INC | DEC | NEG | POP | POPF | RET | IRET | PUSH | PUSHF | SWAP |
-         EI  | DI | RSP | WSP | RIP | WIP | RPS | WPS | DIV;
+         EI  | DI | RSP | WSP;
 branch: BEQ | BNE | BMI | BPL | BCS | BCC | BVS | BVC | BLT | BGE | BR;
 io:  IN | OUT | INT;
+imm: SPADD;
+far: FCALL;
 
 sp: SP;
 ip: IP;
@@ -241,6 +248,7 @@ LD: ( L D ) | ( RN RYA RM );             //НЯМ
 SWAM: ( S W A M ) | ( RO RB RM RE RN );  // ОБМЕН
 JUMP: ( J U M P ) | ( RP RR RII RG );    //ПРЫГ
 CALL: ( C A L L ) | ( RV RZH RU RKH );   // ВЖУХ
+FCALL: ( F C A L L );
 ST: ( S T ) | ( RT RSSIGN RF RU );       //ТЬФУ
 
 NOP: ( N O P ) | ( RP RR RO RP ); // ПРОП
@@ -267,13 +275,7 @@ PUSHF: ( P U S H F ) | ( RS RU RN RSSIGN RF); // СУНЬФ
 SWAP: ( S W A P ) | ( RM RE RN RSSIGN ); // МЕНЬ
 RSP: ( R S P );
 WSP: ( W S P );
-RIP: ( R I P );
-WIP: ( W I P );
-RPS: ( R P S );
-WPS: ( W P S );
 SPADD: (S P A D D) | (S A D) | (S A D D);
-MUL: (M U L);
-DIV: (D I V);
 
 BEQ: ( B E Q ) | ( B Z S ) | ( RB RYA RK RA ); // БЯКА
 BNE: ( B N E ) | ( B Z C );
