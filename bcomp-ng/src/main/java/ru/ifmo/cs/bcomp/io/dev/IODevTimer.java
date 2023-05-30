@@ -17,10 +17,15 @@ public class IODevTimer {
 	private final Register dr;
 	private Thread timer;
 	private volatile boolean running = true;
+	private int timerPeriod;
 
 	public IODevTimer(IOCtrl ctrl) {
 		this.ctrl = (IOCtrlBasic)ctrl;
 		this.dr = ctrl.getRegisters()[0];
+
+		timerPeriod = Integer.parseInt(
+				System.getProperty("timerPeriod", "100")
+		);
 	}
 
 	public void start(String name) {
@@ -30,7 +35,7 @@ public class IODevTimer {
 
 			while (running) {
 				try {
-					 Thread.sleep(100);
+					 Thread.sleep(timerPeriod);
 				} catch (Exception ignored) { }
 
 				value = dr.getValue();
