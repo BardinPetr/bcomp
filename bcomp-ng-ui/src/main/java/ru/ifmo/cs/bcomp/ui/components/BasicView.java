@@ -32,6 +32,7 @@ public class BasicView extends BCompPanel {
     private IOCtrl[] ioctrls;
     private FirstIO firstIO;
     private SecondIO secondIO;
+    private Terminal terminalIO;
     private TextPrinter textPrinter = null;
     private Ticker ticker = null;
     private SevenSegmentDisplay ssd = null;
@@ -87,7 +88,23 @@ public class BasicView extends BCompPanel {
                     thirdIO.getFrame().setVisible(false);
             }
         }
-    }, null,
+    }, new ItemListener() {
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            switch (e.getStateChange()) {
+                case ItemEvent.SELECTED:
+                    if (terminalIO == null) {
+                        terminalIO = new Terminal((IOCtrlDuplex) ioctrls[4]);
+                        activateAndAddListener(terminalIO, 3);
+                    } else {
+                        terminalIO.activate();
+                    }
+                    break;
+                case ItemEvent.DESELECTED:
+                    terminalIO.getFrame().setVisible(false);
+            }
+        }
+    },
         new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {

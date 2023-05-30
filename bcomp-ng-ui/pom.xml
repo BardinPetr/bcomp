@@ -15,6 +15,13 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+	<repositories>
+		<repository>
+			<id>sshtools</id>
+			<name>sshtools</name>
+			<url>https://maven.pkg.github.com/bardinpetr/com-sshtools-terminal</url>
+		</repository>
+	</repositories>
 	<build>
 		<plugins>
 			<plugin>
@@ -82,15 +89,35 @@
 			<artifactId>components</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-                <dependency>
-                        <groupId>${project.groupId}</groupId>
-                        <artifactId>bcomp-ng</artifactId>
-                        <version>${project.version}</version>
-                </dependency>
-                <dependency>
-                        <groupId>${project.groupId}</groupId>
-                        <artifactId>bcomp-assembler</artifactId>
-                        <version>${project.version}</version>
-                </dependency>                
+		<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>bcomp-ng</artifactId>
+				<version>${project.version}</version>
+		</dependency>
+		<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>bcomp-assembler</artifactId>
+				<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sshtools</groupId>
+			<artifactId>terminal</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sshtools</groupId>
+			<artifactId>terminal-awt</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sshtools</groupId>
+			<artifactId>terminal-common-awt</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.1</version>
+		</dependency>
 	</dependencies>
 </project>

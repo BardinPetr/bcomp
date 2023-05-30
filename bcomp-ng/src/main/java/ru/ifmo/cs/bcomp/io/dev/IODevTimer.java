@@ -30,7 +30,7 @@ public class IODevTimer {
 
 			while (running) {
 				try {
-					 Thread.sleep(10);
+					 Thread.sleep(100);
 				} catch (Exception ignored) { }
 
 				value = dr.getValue();

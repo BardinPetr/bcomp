@@ -33,6 +33,7 @@ public class loc extends ListResourceBundle {
             {"DEV-7", "Dev 7"},
             {"DEV-8", "Dev 8"},
             {"DEV-9", "Dev 9"},
+            {"terminal", "Terminal (0x8-0xB)"},
             {"printer", "Text printer (0xC-0xF)"},
             {"ticker", "Ticker (0x10-0x13)"},
             {"ssd", "Seven segment display (0x14-0x17)"},

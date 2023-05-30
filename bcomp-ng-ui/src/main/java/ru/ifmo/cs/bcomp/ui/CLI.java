@@ -6,8 +6,9 @@ package ru.ifmo.cs.bcomp.ui;
 import ru.ifmo.cs.bcomp.io.IOCtrl;
 import ru.ifmo.cs.bcomp.microcode.MCDecoder;
 import ru.ifmo.cs.components.Utils;
-import java.util.ArrayList;
-import java.util.Scanner;
+
+import java.util.*;
+
 import ru.ifmo.cs.bcomp.*;
 import ru.ifmo.cs.components.DataDestination;
 import ru.ifmo.cs.bcomp.assembler.AsmNg;
@@ -23,6 +24,8 @@ public class CLI {
     private final CPU cpu;
 	private final IOCtrl[] ioctrls;
     private final ArrayList<Long> writelist = new ArrayList<Long>();
+
+    private final IOGUI iogui;
 
     private int sleeptime = 1;
     private volatile long savedPointer;
@@ -94,7 +97,11 @@ public class CLI {
         });
 
 		ioctrls = bcomp.getIOCtrls();
+        iogui = new IOGUI(ioctrls);
+
+        checkAutostart();
     }
+
 
     private String getReg(Reg reg) {
         return Utils.toHex(cpu.getRegValue(reg), cpu.getRegWidth(reg));
@@ -179,6 +186,7 @@ public class CLI {
                 + "{exit|quit}\t- Выход из эмулятора\n"
                 + "(0000-FFFF)\t- Ввод шестнадцатеричного значения в клавишный регистр\n"
                 + "labelname\t- Ввод адреса метки в клавишный регистр"
+                + "gio id\t- Открыть UI ВУ-id\n"
         );
     }
 
@@ -393,6 +401,28 @@ public class CLI {
                     sleeptime = Integer.parseInt(cmds[++i], 16);
                     continue;
                 }
+
+                if (checkCmd(cmd, "gio")) {
+                    if (i == cmds.length - 1)
+                        throw new Exception("команда gio требует минимум 1 аргумент: gio devId (1-9)");
+                    int idIO = Integer.parseInt(cmds[++i]);
+                    iogui.load(idIO - 1);
+                    continue;
+                }
+
+                if (checkCmd(cmd, "dump")) {
+                    if (i == cmds.length - 1)
+                        throw new Exception("команда dump требует 1 или 2 аргумента: dump start [end]");
+                    long start = Long.parseLong(cmds[++i], 16);
+
+                    if (i != cmds.length - 1) {
+                        long end = Long.parseLong(cmds[++i], 16);
+                        dumpMemory(start, end);
+                    } else {
+                        dumpMemory(start, start);
+                    }
+                    continue;
+                }
             } catch (Exception e) {
                 printOnStop = true;
                 println("Ошибка: " + e.getMessage());
@@ -412,6 +442,24 @@ public class CLI {
                 println("Неизвестная команда " + cmd);
             }
         }
+    }
+
+    private void checkAutostart() {
+        if (System.getProperty("autostart", "off").equals("off")) return;
+
+        cpu.setRunState(true);
+        iogui.load(3);
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                cpu.startStart();
+            }
+        }, 250);
+    }
+
+    private void dumpMemory(long start, long end) {
+        for (long i = start; i <= end; i++)
+            System.out.println(getMemory(i));
     }
 
     @SuppressWarnings("WeakerAccess")
