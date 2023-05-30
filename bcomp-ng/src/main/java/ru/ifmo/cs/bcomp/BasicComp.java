@@ -3,6 +3,11 @@
  */
 package ru.ifmo.cs.bcomp;
 
+import ru.ifmo.cs.bcomp.io.IOCtrl;
+import ru.ifmo.cs.bcomp.io.IOCtrlBasic;
+import ru.ifmo.cs.bcomp.io.IOCtrlDuplex;
+import ru.ifmo.cs.bcomp.io.dev.IODevTimer;
+
 /**
  *
  * @author Dmitry Afanasiev <KOT@MATPOCKuH.Ru>
@@ -22,7 +27,7 @@ public class BasicComp {
                         (ioctrls[1] = new IOCtrlBasic(0x02, cpu, IOCtrlBasic.TYPE.OUTPUT,
                                 (ioctrls[2] = new IOCtrlBasic(0x04, cpu, IOCtrlBasic.TYPE.INPUT,
                                         (ioctrls[3] = new IOCtrlBasic(0x06, cpu, IOCtrlBasic.TYPE.INPUTOUTPUT,
-                                                (ioctrls[4] = new IOCtrlAdv(0x08, cpu,
+                                                (ioctrls[4] = new IOCtrlDuplex(0x08, cpu,
                                                         (ioctrls[5] = new IOCtrlBasic(0x0C, cpu, IOCtrlBasic.TYPE.OUTPUT,
                                                                 (ioctrls[6] = new IOCtrlBasic(0x10, cpu, IOCtrlBasic.TYPE.OUTPUT,
                                                                         (ioctrls[7] = new IOCtrlBasic(0x14, cpu, IOCtrlBasic.TYPE.OUTPUT,

@@ -1,12 +1,12 @@
 package ru.ifmo.cs.bcomp.ui.io;
-import ru.ifmo.cs.bcomp.IOCtrl;
+import ru.ifmo.cs.bcomp.io.IOCtrl;
 import ru.ifmo.cs.bcomp.ui.components.RegisterView;
 import javax.swing.*;
 import java.awt.*;
 
 import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.*;
 
-public class ThirdIO extends IODevice {
+public class ThirdIO extends IODevice<IOCtrl> {
     private RegisterView output;
 
     public ThirdIO(IOCtrl ioCtrl) {

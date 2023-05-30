@@ -2,8 +2,10 @@
  * $Id$
  */
 
-package ru.ifmo.cs.bcomp;
+package ru.ifmo.cs.bcomp.io.dev;
 
+import ru.ifmo.cs.bcomp.io.IOCtrl;
+import ru.ifmo.cs.bcomp.io.IOCtrlBasic;
 import ru.ifmo.cs.components.Register;
 
 /**
@@ -22,29 +24,26 @@ public class IODevTimer {
 	}
 
 	public void start(String name) {
-		timer = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				long countdown = 0;
-				long value;
+		timer = new Thread(() -> {
+			long countdown = 0;
+			long value;
 
-				while (running) {
-					try {
-						Thread.sleep(100);
-					} catch (Exception ex) { }
+			while (running) {
+				try {
+					 Thread.sleep(10);
+				} catch (Exception ignored) { }
 
-					value = dr.getValue();
+				value = dr.getValue();
 
-					if (countdown != 0)
-						if (countdown <= value) {
-							if ((--countdown) == 0)
-								ctrl.setReady();
-							else
-								continue;
-						}
+				if (countdown != 0)
+					if (countdown <= value) {
+						if ((--countdown) == 0)
+							ctrl.setReady();
+						else
+							continue;
+					}
 
-					countdown = value;
-				}
+				countdown = value;
 			}
 		}, name);
 

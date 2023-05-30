@@ -4,19 +4,18 @@
 
 package ru.ifmo.cs.bcomp.ui;
 
-import javax.swing.JApplet;
-import javax.swing.JFrame;
-import javax.swing.JTabbedPane;
-import javax.swing.WindowConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import ru.ifmo.cs.bcomp.BasicComp;
 import ru.ifmo.cs.bcomp.CPU;
-import ru.ifmo.cs.bcomp.IOCtrl;
-import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.PANE_SIZE;
+import ru.ifmo.cs.bcomp.io.IOCtrl;
 import ru.ifmo.cs.bcomp.ui.components.*;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+
+import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.PANE_SIZE;
 
 /**
  *
@@ -41,8 +40,8 @@ public class GUI extends JApplet {
 		cmanager = new ComponentManager(this);
 
 		final ActivateblePanel[] panels = {
-			new BasicView(this),
-                        new AssemblerView(this),
+				new BasicView(this),
+				new AssemblerView(this),
 		};
 
 		tabs = new JTabbedPane();

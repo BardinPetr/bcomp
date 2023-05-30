@@ -5,6 +5,7 @@ package ru.ifmo.cs.bcomp.ui.components;
 
 import ru.ifmo.cs.bcomp.*;
 
+import ru.ifmo.cs.bcomp.io.*;
 import ru.ifmo.cs.bcomp.ui.GUI;
 import ru.ifmo.cs.bcomp.ui.io.*;
 import ru.ifmo.cs.components.DataDestination;

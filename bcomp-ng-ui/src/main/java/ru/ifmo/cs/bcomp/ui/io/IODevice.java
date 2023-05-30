@@ -8,20 +8,20 @@ import java.awt.*;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.JFrame;
-import ru.ifmo.cs.bcomp.IOCtrl;
+import ru.ifmo.cs.bcomp.io.IOCtrl;
 
 /**
  *
  * @author Dmitry Afanasiev <KOT@MATPOCKuH.Ru>
  */
-public abstract class IODevice {
-	protected final IOCtrl ioctrl;
+public abstract class IODevice<T extends IOCtrl> {
+	protected final T ioctrl;
 	protected final String title;
-	private JFrame frame = null;
+	protected JFrame frame = null;
 	private ResourceBundle res = ResourceBundle.getBundle("ru.ifmo.cs.bcomp.ui.components.loc", Locale.getDefault());
 
 
-	public IODevice(final IOCtrl ioctrl, final String title) {
+	public IODevice(final T ioctrl, final String title) {
 		this.ioctrl = ioctrl;
 		this.title = res.getString(title);
 	}

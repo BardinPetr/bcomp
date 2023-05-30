@@ -13,6 +13,7 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 
 import ru.ifmo.cs.bcomp.*;
+import ru.ifmo.cs.bcomp.io.IOCtrl;
 import ru.ifmo.cs.bcomp.ui.GUI;
 
 import static ru.ifmo.cs.bcomp.ControlSignal.*;
@@ -444,10 +445,13 @@ public class ComponentManager {
 
 	public void cmdInvertRunState() {
 		cpu.invertRunState();
-		long state = cpu.getProgramState(State.W);
-		rbRanStop.setSelected(state == 1);
-		rbRanStop.setText(buttonProperties[BUTTON_RUN].texts[(int) state]);
+		setRunState(cpu.getProgramState(State.W) == 1);
 		regs.get(Reg.PS).setValue();
+	}
+
+	public void setRunState(boolean state) {
+		rbRanStop.setSelected(state);
+		rbRanStop.setText(buttonProperties[BUTTON_RUN].texts[state ? 1 : 0]);
 	}
 
 	public void cmdInvertClockState() {

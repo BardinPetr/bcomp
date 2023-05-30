@@ -12,7 +12,7 @@ import java.awt.Graphics;
 import java.util.Arrays;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import ru.ifmo.cs.bcomp.IOCtrl;
+import ru.ifmo.cs.bcomp.io.IOCtrl;
 
 /**
  *

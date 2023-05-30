@@ -16,7 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
-import ru.ifmo.cs.bcomp.IOCtrl;
+import ru.ifmo.cs.bcomp.io.IOCtrl;
 import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.FONT_COURIER_BOLD_21;
 
 /**

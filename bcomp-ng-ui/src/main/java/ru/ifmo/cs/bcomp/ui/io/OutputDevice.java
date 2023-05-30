@@ -11,13 +11,13 @@ import javax.swing.JCheckBox;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import ru.ifmo.cs.bcomp.IOCtrl;
+import ru.ifmo.cs.bcomp.io.IOCtrl;
 
 /**
  *
  * @author Dmitry Afanasiev <KOT@MATPOCKuH.Ru>
  */
-public abstract class OutputDevice extends IODevice {
+public abstract class OutputDevice extends IODevice<IOCtrl> {
 	private Thread timer = null;
 	private long sleeptime = 100;
 	private volatile boolean poweredon = true;

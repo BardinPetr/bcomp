@@ -1,13 +1,13 @@
 package ru.ifmo.cs.bcomp.ui.io;
-import ru.ifmo.cs.bcomp.IOCtrl;
+import ru.ifmo.cs.bcomp.io.IOCtrl;
 import ru.ifmo.cs.bcomp.ui.components.ComponentManager;
 import ru.ifmo.cs.bcomp.ui.components.InputRegisterView;
 import javax.swing.*;
 import java.awt.*;
 import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.*;
 
-public class SecondIO extends IODevice {
-    private ComponentManager componentManager;
+public class SecondIO extends IODevice<IOCtrl> {
+    private final ComponentManager componentManager;
     private InputRegisterView input;
 
     public SecondIO(IOCtrl ioCtrl, ComponentManager componentManager) {

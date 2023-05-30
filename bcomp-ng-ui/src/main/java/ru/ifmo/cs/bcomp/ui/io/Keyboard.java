@@ -13,14 +13,15 @@ import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
-import ru.ifmo.cs.bcomp.IOCtrl;
+import ru.ifmo.cs.bcomp.io.IOCtrl;
+
 import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.FONT_COURIER_PLAIN_12;
 
 /**
  *
  * @author Dmitry Afanasiev <KOT@MATPOCKuH.Ru>
  */
-public class Keyboard extends IODevice {
+public class Keyboard extends IODevice<IOCtrl> {
 	private enum Lang {EN, RU};
 
 	static final Dimension DIMS = new Dimension(45, 30);

@@ -10,14 +10,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import ru.ifmo.cs.bcomp.IOCtrl;
+import ru.ifmo.cs.bcomp.io.IOCtrl;
 import ru.ifmo.cs.components.DataDestination;
 
 /**
  *
  * @author Dmitry Afanasiev <KOT@MATPOCKuH.Ru>
  */
-public class Numpad extends IODevice {
+public class Numpad extends IODevice<IOCtrl> {
 	private class NumButton extends JButton {
 		private final int value;
 

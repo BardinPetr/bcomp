@@ -3,8 +3,6 @@
  */
 package ru.ifmo.cs.bcomp.ui.io;
 
-import ru.ifmo.cs.bcomp.IOCtrl;
-import ru.ifmo.cs.components.DataDestination;
 
 /**
  *

@@ -1,8 +1,9 @@
 /*
  * $Id$
  */
-package ru.ifmo.cs.bcomp;
+package ru.ifmo.cs.bcomp.io;
 
+import ru.ifmo.cs.bcomp.CPU;
 import ru.ifmo.cs.components.*;
 
 /**

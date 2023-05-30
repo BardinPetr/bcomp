@@ -4,24 +4,6 @@
 
 package ru.ifmo.cs.bcomp.ui.components;
 
-import java.awt.Graphics;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import ru.ifmo.cs.bcomp.CPU;
-
-import ru.ifmo.cs.bcomp.IOCtrl;
-import ru.ifmo.cs.bcomp.SignalListener;
-import ru.ifmo.cs.bcomp.ui.GUI;
-import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.*;
-import ru.ifmo.cs.bcomp.ui.io.BComp2BCompIODev;
-import ru.ifmo.cs.bcomp.ui.io.Keyboard;
-import ru.ifmo.cs.bcomp.ui.io.Numpad;
-import ru.ifmo.cs.bcomp.ui.io.SevenSegmentDisplay;
-import ru.ifmo.cs.bcomp.ui.io.TextPrinter;
-import ru.ifmo.cs.bcomp.ui.io.Ticker;
-
 
 /**
  *

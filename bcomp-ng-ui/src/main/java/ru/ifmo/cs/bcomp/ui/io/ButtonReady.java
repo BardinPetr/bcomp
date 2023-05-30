@@ -1,5 +1,5 @@
 package ru.ifmo.cs.bcomp.ui.io;
-import ru.ifmo.cs.bcomp.IOCtrl;
+import ru.ifmo.cs.bcomp.io.IOCtrl;
 import ru.ifmo.cs.components.DataDestination;
 import javax.swing.*;
 import java.awt.event.ActionEvent;

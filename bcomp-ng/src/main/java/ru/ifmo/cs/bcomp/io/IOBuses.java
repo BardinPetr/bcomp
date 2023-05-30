@@ -1,7 +1,7 @@
 /*
  * $Id$
  */
-package ru.ifmo.cs.bcomp;
+package ru.ifmo.cs.bcomp.io;
 
 /**
  *

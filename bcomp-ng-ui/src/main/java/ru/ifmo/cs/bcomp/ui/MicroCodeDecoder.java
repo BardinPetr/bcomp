@@ -6,8 +6,8 @@ package ru.ifmo.cs.bcomp.ui;
 
 import ru.ifmo.cs.bcomp.BasicComp;
 import ru.ifmo.cs.bcomp.CPU;
-import static ru.ifmo.cs.bcomp.MCDecoder.getFormattedMC;
-import ru.ifmo.cs.bcomp.MicroCode;
+import static ru.ifmo.cs.bcomp.microcode.MCDecoder.getFormattedMC;
+import ru.ifmo.cs.bcomp.microcode.MicroCode;
 import static ru.ifmo.cs.bcomp.RunningCycle.*;
 
 /**
