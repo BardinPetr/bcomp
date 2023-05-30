@@ -4,52 +4,82 @@
 
 package ru.ifmo.cs.bcomp.ui;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.nio.charset.Charset;
 import ru.ifmo.cs.bcomp.BasicComp;
 import ru.ifmo.cs.bcomp.ProgramBinary;
 import ru.ifmo.cs.bcomp.assembler.AsmNg;
 import ru.ifmo.cs.bcomp.assembler.Program;
+import ru.ifmo.cs.bcomp.assembler.binary.ExecutableGenerator;
+import ru.ifmo.cs.components.Utils;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 
 /**
- *
  * @author Dmitry Afanasiev <KOT@MATPOCKuH.Ru>
  */
 public class BCompApp {
+
 	public static void main(String[] args) throws Exception {
 		BasicComp bcomp = new BasicComp();
-		String mpname;
 		String app;
 
 		try {
-			app = System.getProperty("mode", "gui");
+			app = System.getProperty("mode", "dual");
 		} catch (Exception e) {
-			app = "gui";
+			app = "dual";
+		}
+
+		if (app.equals("build")) {
+			String path = System.getProperty("code", null);
+			if (path == null) {
+				System.err.println("No file supplied to build binary");
+				System.exit(1);
+			}
+			try {
+				var builder = new ExecutableGenerator();
+				var binary = builder.process(path);
+				System.out.println(binary.asStrings());
+			} catch (Exception ex) {
+				System.err.println(ex.getMessage());
+			}
+			System.exit(0);
 		}
 
 		try {
 			String code = System.getProperty("code", null);
 			File file = new File(code);
-			FileInputStream fin = null;
 
-			try {
-				fin = new FileInputStream(file);
-				byte content[] = new byte[(int)file.length()];
-				fin.read(content);
-				code = new String(content, Charset.forName("UTF-8"));
+			try (var fin = new FileInputStream(file)) {
+				byte[] content = fin.readAllBytes();
+				code = new String(content, StandardCharsets.UTF_8);
+
 				AsmNg asm = new AsmNg(code);
 				Program pobj = asm.compile();
 				if (asm.getErrors().isEmpty()) {
 					ProgramBinary prog = new ProgramBinary(pobj.getBinaryFormat());
+
 					bcomp.loadProgram(prog);
+					System.out.printf("Program loaded. Instructions count: %d\n", pobj.content.size());
+
+					if(System.getProperty("labels") != null) {
+						System.out.println("labels in program: ");
+						pobj.labels
+								.values().stream()
+								.sorted(Comparator.comparing(i -> i.name))
+								.forEach(v -> System.out.printf(
+												"%s: %s\n",
+												v.name,
+												Utils.toHex(v.address, 11)
+										)
+								);
+					}
 				} else {
 					for (String err : asm.getErrors())
 						System.out.println(err);
+					System.exit(1);
 				}
-			} finally {
-				if (fin != null)
-					fin.close();
 			}
 		} catch (Exception e) { }
 
